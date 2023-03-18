@@ -1,0 +1,41 @@
+// ==UserScript==
+// @name         Highlight Words
+// @namespace    tampermonkey-scripts
+// @version      1
+// @description  Highlight specific words.
+// @match        https://en.wikipedia.org/*
+// @grant        none
+// ==/UserScript==
+
+(function() {
+    'use strict';
+
+    // Add the words you want to highlight in this array
+    const wordsToHighlight = ["users", "autobiographical", "webspace"];
+
+    // Loop through each word and highlight it in red with white text
+    for (const word of wordsToHighlight) {
+        const regex = new RegExp(word, "gi");
+        const replaceWith = `<span style="background-color: red; color: white;">$&</span>`;
+
+        const walker = document.createTreeWalker(
+            document.body,
+            NodeFilter.SHOW_TEXT,
+            { acceptNode: node => regex.test(node.textContent) ? NodeFilter.FILTER_ACCEPT : NodeFilter.FILTER_SKIP },
+            false
+        );
+
+        let node;
+        while (node = walker.nextNode()) {
+            const range = document.createRange();
+            range.setStart(node, regex.lastIndex - word.length);
+            range.setEnd(node, regex.lastIndex);
+            const span = document.createElement("span");
+            span.style.backgroundColor = "red";
+            span.style.color = "white";
+            span.appendChild(range.extractContents());
+            range.insertNode(span);
+            regex.lastIndex += 18;
+        }
+    }
+})();
